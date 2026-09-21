@@ -45,50 +45,52 @@
 
     <p id="status"></p>
 
-    <script>
-        async function lookupUPC() {
-            const bin = document.getElementById("binSelect").value;
-            const upc = document.getElementById("upcInput").value.trim();
-            const status = document.getElementById("status");
+<script>
+async function lookupUPC() {
+    const bin = document.getElementById("binSelect").value;
+    const upc = document.getElementById("upcInput").value.trim();
+    const status = document.getElementById("status");
 
-            if (!upc) {
-                status.innerText = "UPC is empty.";
-                return;
-            }
+    if (!upc) {
+        status.innerText = "UPC is empty.";
+        return;
+    }
 
-            status.innerText = "Looking up product…";
+    status.innerText = "Looking up product…";
 
-            try {
-                const response = await fetch("https://raspy-cell-629b.ziyad-mansur.workers.dev/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ upc, bin })
-                });
+    try {
+        const response = await fetch("https://raspy-cell-629b.ziyad-mansur.workers.dev/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ upc, bin })
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (!response.ok) {
-                    status.innerText = data.error || "Something went wrong";
-                    return;
-                }
-
-                status.innerText = `Saved: ${data.product}`;
-            } catch (err) {
-                status.innerText = "Network error";
-            }
-
-            // Clear + refocus for next scan
-            setTimeout(() => {
-                const upcInput = document.getElementById("upcInput");
-                upcInput.value = "";
-                upcInput.focus();
-            }, 50);
+        if (!response.ok) {
+            status.innerText = data.error || "Something went wrong";
+            return;
         }
 
-        // Allow pressing Enter after scanning
-        document.getElementById("upcInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") lookupUPC();
-        });
-    </script>
+        // Now you have the full product object
+        const p = data.product;
+        status.innerHTML = `
+            <strong>Saved successfully!</strong><br>
+            <b>Name:</b> ${p.title || "—"}<br>
+            <b>Brand:</b> ${p.brand || "—"}<br>
+            <b>Description:</b> ${p.description ? p.description.substring(0, 120) + "..." : "—"}
+        `;
+    } catch (err) {
+        status.innerText = "Network error";
+    }
+
+    // Clear + refocus
+    setTimeout(() => {
+        const upcInput = document.getElementById("upcInput");
+        upcInput.value = "";
+        upcInput.focus();
+    }, 50);
+}
+</script>
 </body>
 </html>
