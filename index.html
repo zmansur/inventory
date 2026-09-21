@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPC Auto Populate → Airtable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056cc;
+        }
+    </style>
+</head>
+<body>
+
+<h2>UPC Auto‑Populate → Airtable</h2>
+
+<label>Select BIN</label>
+<select id="binSelect">
+    <option value="BIN-001">BIN‑001</option>
+    <option value="BIN-002">BIN‑002</option>
+    <option value="BIN-003">BIN‑003</option>
+    <option value="BIN-004">BIN‑004</option>
+    <option value="BIN-005">BIN‑005</option>
+</select>
+
+<label>Scan UPC</label>
+<input id="upcInput" placeholder="Scan UPC here" />
+
+<button onclick="lookupUPC()">Lookup & Save</button>
+
+<p id="status"></p>
+
+<script>
+async function lookupUPC() {
+    const bin = document.getElementById("binSelect").value;
+    const upc = document.getElementById("upcInput").value.trim();
+    const status = document.getElementById("status");
+
+    if (!upc) {
+        status.innerText = "UPC is empty.";
+        return;
+    }
+
+    status.innerText = "Looking up product…";
+
+    // UPCItemDB free API
+    const apiURL = `https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`;
+    const response = await fetch(apiURL);
+    const data = await response.json();
+
+    if (!data.items || data.items.length === 0) {
+        status.innerText = "No product found.";
+        return;
+    }
+
+    const item = data.items[0];
+    const title = item.title || "";
+    const description = item.description || "";
+    const brand = item.brand || "";
+    const image = item.images && item.images.length > 0 ? item.images[0] : "";
+
+    status.innerText = "Product found. Saving to Airtable…";
+
+    // Airtable API
+    const airtableURL = "https://raspy-cell-629b.ziyad-mansur.workers.dev/";
+
+    const payload = {
+        fields: {
+            "BIN ID": bin,
+            "UPC": upc,
+            "Product Name": title,
+            "Description": description,
+            "Brand": brand,
+            "Image": image
+        }
+    };
+
+const airtableResponse = await fetch(airtableURL, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+});
+
+    if (airtableResponse.ok) {
+    status.innerText = "Saved to Airtable successfully.";
+
+    // Clear + refocus after a tiny delay so scanners don't race the DOM
+    setTimeout(() => {
+        const upcInput = document.getElementById("upcInput");
+        upcInput.value = "";
+        upcInput.focus();
+    }, 50);
+
+} else {
+    status.innerText = "Error saving to Airtable.";
+}
+}
+</script>
+
+</body>
+</html>
