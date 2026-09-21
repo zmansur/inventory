@@ -78,7 +78,7 @@ async function lookupUPC() {
     status.innerText = "Product found. Saving to Airtable…";
 
     // Airtable API
-    const airtableURL = "https://api.airtable.com/v0/appORUpa8xmIUsJi9/tblSO4W8nbHDNq0hN/Bins";
+    const airtableURL = "https://raspy-cell-629b.ziyad-mansur.workers.dev/";
 
     const payload = {
         fields: {
@@ -91,14 +91,13 @@ async function lookupUPC() {
         }
     };
 
-    const airtableResponse = await fetch(airtableURL, {
-        method: "POST",
-        headers: {
-            "Authorization": "Bearer YOUR_AIRTABLE_API_KEY",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    });
+const airtableResponse = await fetch(airtableURL, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+});
 
     if (airtableResponse.ok) {
         status.innerText = "Saved to Airtable successfully.";
