@@ -100,10 +100,18 @@ const airtableResponse = await fetch(airtableURL, {
 });
 
     if (airtableResponse.ok) {
-        status.innerText = "Saved to Airtable successfully.";
-    } else {
-        status.innerText = "Error saving to Airtable.";
-    }
+    status.innerText = "Saved to Airtable successfully.";
+
+    // Clear + refocus after a tiny delay so scanners don't race the DOM
+    setTimeout(() => {
+        const upcInput = document.getElementById("upcInput");
+        upcInput.value = "";
+        upcInput.focus();
+    }, 50);
+
+} else {
+    status.innerText = "Error saving to Airtable.";
+}
 }
 </script>
 
