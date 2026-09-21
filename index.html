@@ -85,13 +85,19 @@ async function lookupUPC() {
     };
 
     // Send to your Worker → Airtable
-    await fetch("https://raspy-cell-629b.ziyad-mansur.workers.dev/", {
+    const workerURL = "https://raspy-cell-629b.ziyad-mansur.workers.dev/";
+
+    const airtableResponse = await fetch(workerURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
     });
 
-    status.innerText = "Saved to Airtable successfully.";
+    if (airtableResponse.ok) {
+        status.innerText = "Saved to Airtable successfully.";
+    } else {
+        status.innerText = "Error saving to Airtable.";
+    }
 
     // Clear + refocus for next scan
     setTimeout(() => {
@@ -99,30 +105,6 @@ async function lookupUPC() {
         upcInput.value = "";
         upcInput.focus();
     }, 50);
-}
-
-
-const airtableResponse = await fetch(airtableURL, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-});
-
-    if (airtableResponse.ok) {
-    status.innerText = "Saved to Airtable successfully.";
-
-    // Clear + refocus after a tiny delay so scanners don't race the DOM
-    setTimeout(() => {
-        const upcInput = document.getElementById("upcInput");
-        upcInput.value = "";
-        upcInput.focus();
-    }, 50);
-
-} else {
-    status.innerText = "Error saving to Airtable.";
-}
 }
 </script>
 
