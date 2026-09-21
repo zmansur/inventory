@@ -78,7 +78,7 @@ async function lookupUPC() {
     status.innerText = "Product found. Saving to Airtable…";
 
     // Airtable API
-    const airtableURL = "https://api.airtable.com/v0/YOUR_BASE_ID/YOUR_TABLE_NAME";
+    const airtableURL = "https://api.airtable.com/v0/appORUpa8xmIUsJi9/tblSO4W8nbHDNq0hN/Bins";
 
     const payload = {
         fields: {
