@@ -59,37 +59,48 @@ async function lookupUPC() {
 
     status.innerText = "Looking up product…";
 
-    // UPCItemDB free API
-    const apiURL = `https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`;
+    // GoUPC free API (no key required)
+    const apiURL = `https://go-upc.com/api/v1/code/${upc}`;
     const response = await fetch(apiURL);
     const data = await response.json();
 
-    if (!data.items || data.items.length === 0) {
+    if (!data.product) {
         status.innerText = "No product found.";
         return;
     }
 
-    const item = data.items[0];
-    const title = item.title || "";
-    const description = item.description || "";
-    const brand = item.brand || "";
-    const image = item.images && item.images.length > 0 ? item.images[0] : "";
+    const item = data.product;
 
     status.innerText = "Product found. Saving to Airtable…";
-
-    // Airtable API
-    const airtableURL = "https://raspy-cell-629b.ziyad-mansur.workers.dev/";
 
     const payload = {
         fields: {
             "BIN ID": bin,
             "UPC": upc,
-            "Product Name": title,
-            "Description": description,
-            "Brand": brand,
-            "Image": image
+            "Product Name": item.title || "",
+            "Description": item.description || "",
+            "Brand": item.brand || "",
+            "Image": item.images?.[0] || ""
         }
     };
+
+    // Send to your Worker → Airtable
+    await fetch("https://raspy-cell-629b.ziyad-mansur.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    status.innerText = "Saved to Airtable successfully.";
+
+    // Clear + refocus for next scan
+    setTimeout(() => {
+        const upcInput = document.getElementById("upcInput");
+        upcInput.value = "";
+        upcInput.focus();
+    }, 50);
+}
+
 
 const airtableResponse = await fetch(airtableURL, {
     method: "POST",
